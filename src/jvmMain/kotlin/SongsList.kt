@@ -1,9 +1,6 @@
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -59,19 +56,55 @@ val songs = arrayOf(
         223,
         picture = "https://i.scdn.co/image/ab67616d00004851a6f439c8957170652f9410e2",
         album = "Loose"
+    ),
+    SongData(
+        "Survivor",
+        "Destiny's Child",
+        234,
+        picture = "https://i.scdn.co/image/ab67616d0000485169c31a0f21885826fa6813f0",
+        album = "Survivor"
+    ),
+    SongData(
+        "No Scrubs",
+        "TLC",
+        214,
+        picture = "https://i.scdn.co/image/ab67616d0000485161ffafd5e31a37336531cf95",
+        album = "Fanmail"
+    ),
+    SongData(
+        "Barbie Girl",
+        "Aqua",
+        197,
+        picture = "https://i.scdn.co/image/ab67616d00004851f5768db89dd8ac30fd0e414f",
+        album = "Aquarium (Special Edition)"
     )
 )
 
 @Composable
-fun SongsList(songs: Array<SongData>) {
-    Column(modifier = Modifier.padding(vertical = 10.dp).height(200.dp).verticalScroll(rememberScrollState())) {
-        songs.mapIndexed { n, it -> SongItem(n, it.name, it.singer, it.duration, it.picture, it.album) }
+fun SongsList(songs: Array<SongData>, currentSong: SongData?, setCurrentSong: (SongData) -> Unit) {
+    Column(modifier = Modifier.padding(vertical = 10.dp).height(300.dp).verticalScroll(rememberScrollState())) {
+        songs.mapIndexed { n, it ->
+            SongItem(
+                n, it.name, it.singer, it.duration, it.picture, it.album, (currentSong?.name ?: "") == it.name
+            ) {
+                setCurrentSong(it)
+            }
+        }
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun SongItem(index: Int, name: String, singer: String, duration: Int, picture: String, album: String) {
+fun SongItem(
+    index: Int,
+    name: String,
+    singer: String,
+    duration: Int,
+    picture: String,
+    album: String,
+    isSelected: Boolean,
+    setCurrentSong: () -> Unit
+) {
     val painter = rememberImagePainter(picture)
     var active by remember { mutableStateOf(false) }
     Row(
@@ -83,6 +116,7 @@ fun SongItem(index: Int, name: String, singer: String, duration: Int, picture: S
             .padding(7.dp)
             .onPointerEvent(PointerEventType.Enter) { active = true }
             .onPointerEvent(PointerEventType.Exit) { active = false }
+            .onClick { setCurrentSong() }
 
     ) {
         Text(
@@ -99,7 +133,12 @@ fun SongItem(index: Int, name: String, singer: String, duration: Int, picture: S
                 .clip(shape = RoundedCornerShape(4.dp))
         )
         Column(modifier = Modifier.padding(start = 8.dp).weight(1f)) {
-            Text(text = name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(
+                text = name,
+                color = if (isSelected) Color(0, 188, 0) else Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
             Text(text = singer, color = Color.Gray, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
         }
         Text(
