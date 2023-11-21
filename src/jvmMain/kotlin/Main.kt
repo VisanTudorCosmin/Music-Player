@@ -20,20 +20,18 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import java.io.File
 import java.net.URL
-import javax.sound.midi.MidiEvent
-import javax.sound.midi.MidiSystem
-import javax.sound.midi.ShortMessage
-import javax.sound.midi.Track
 import javax.sound.sampled.AudioSystem
-
+import javax.sound.sampled.Clip
 
 @Composable
 @Preview
 fun HomeView(closeWindow: () -> Unit) {
     MaterialTheme {
         var currentSong: SongData? by remember { mutableStateOf(null) }
+        var player: Clip by remember { mutableStateOf(AudioSystem.getClip()) }
+        var isRunning by remember { mutableStateOf(false) }
+
         Column(
             modifier = Modifier
 //                .background(color = Color(30, 65, 122), shape = RoundedCornerShape(15.dp))
@@ -43,7 +41,22 @@ fun HomeView(closeWindow: () -> Unit) {
             Row(modifier = Modifier.padding(bottom = 10.dp).align(Alignment.End)) {
                 WindowActions(closeWindow)
             }
-            SongsList(songs, currentSong) { song -> currentSong = song }
+            SongsList(songs, currentSong) { song ->
+                val inputStream = AudioSystem.getAudioInputStream(URL("https://chimein.b-cdn.net/audio/Reflections-on-the-Water-CLI010501.wav"))
+                player.stop()
+                player.close()
+                player.open(inputStream)
+                player.start()
+                currentSong = song
+                isRunning = true
+            }
+            MusicPlayer({t -> if(t) {
+                player.start()
+                isRunning = true
+            } else {
+                player.stop()
+                isRunning = false
+            }}, isRunning)
         }
     }
 }
